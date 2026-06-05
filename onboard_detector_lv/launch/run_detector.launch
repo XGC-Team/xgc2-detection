@@ -1,5 +1,5 @@
 <launch>
-	<rosparam file="$(find onboard_detector_lv)/cfg/detector_param.yaml" ns="/onboard_detector_lv" />
+	<rosparam file="$(find onboard_detector_lv)/cfg/detector_param.yaml" ns="/onboard_detector" />
 	<node pkg="onboard_detector_lv" type="detector_node_lv" name="detector_node_lv" output="screen" />
     <!-- <node pkg="onboard_detector_lv" type="yolo_detector_node.py" name="yolo_detector_node" output="screen" /> -->
     <!-- TO run yolo v11: pip install ultralytics -->

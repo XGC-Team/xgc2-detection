@@ -4,7 +4,7 @@ set -euo pipefail
 INSTALL_ROOT=""
 OUTPUT_DIR=""
 ROS_DISTRO="${ROS_DISTRO:-noetic}"
-VERSION="${PACKAGE_VERSION:-1.0.0-1}"
+VERSION="${PACKAGE_VERSION:-1.0.0-2}"
 PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 ARCH="$(dpkg --print-architecture)"
 
