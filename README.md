@@ -2,10 +2,15 @@
 
 ROS1 Noetic perception detection packages for XGC2.
 
-This repository currently packages `onboard_detector_lv`, imported from `LV-DOT/onboard_detector_lv`, as:
+This repository currently packages:
 
 - `ros-noetic-xgc2-onboard-detector-lv`
+- `ros-noetic-xgc2-fapp-obj-state-msgs`
+- `ros-noetic-xgc2-fapp-mot-mapping`
 - `ros-noetic-xgc2-detection`
+
+`onboard_detector_lv` is imported from `LV-DOT/onboard_detector_lv`.
+`fapp_obj_state_msgs` and `fapp_mot_mapping` are imported from FAPP as the point-cloud dynamic object state and mapping/tracking side of the stack.
 
 ## Build
 
@@ -13,6 +18,7 @@ This repository currently packages `onboard_detector_lv`, imported from `LV-DOT/
 .xgc2/scripts/check_package_compliance.sh
 .xgc2/scripts/check_ros_packages.sh
 .xgc2/scripts/build_debs_in_docker.sh --package-group onboard-detector-lv
+.xgc2/scripts/build_debs_in_docker.sh --package-group fapp
 ```
 
 The Docker build uses `ros:noetic-ros-base-focal`, builds the catkin package, installs into a staged root, packages the installed runtime payload, and can run the installed-package smoke check.
@@ -34,4 +40,3 @@ The C++ detector and fake detector are fully covered by APT dependencies. The YO
 ```bash
 python3 -m pip install torch torchvision ultralytics
 ```
-

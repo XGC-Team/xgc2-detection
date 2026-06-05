@@ -4,7 +4,7 @@ set -euo pipefail
 INSTALL_ROOT=""
 OUTPUT_DIR=""
 ROS_DISTRO="${ROS_DISTRO:-noetic}"
-VERSION="${PACKAGE_VERSION:-1.0.0-2}"
+VERSION="${PACKAGE_VERSION:-1.0.0-3}"
 PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 ARCH="$(dpkg --print-architecture)"
 
@@ -118,6 +118,16 @@ require_ros_package_payload() {
   fi
 }
 
+require_ros_interface_payload() {
+  local ros_pkg="$1"
+  local pkg_root="$2"
+
+  if [[ ! -d "${pkg_root}${PREFIX}/share/${ros_pkg}" ]]; then
+    echo "missing installed interface payload for ROS package ${ros_pkg}; check catkin install() rules" >&2
+    exit 1
+  fi
+}
+
 prune_installed_package_payload() {
   local pkg_root="$1"
   local ros_pkg="$2"
@@ -156,11 +166,32 @@ build_ros_package_deb() {
   fakeroot dpkg-deb --build "${pkg_root}" "${OUTPUT_DIR}/${package}_${VERSION}_${ARCH}.deb" >/dev/null
 }
 
+build_ros_interface_deb() {
+  local package="$1"
+  local ros_pkg="$2"
+  local depends="$3"
+  local description="$4"
+
+  local pkg_root="${BUILD_DIR}/${package}"
+  rm -rf "${pkg_root}"
+  mkdir -p "${pkg_root}"
+
+  copy_ros_package_paths "${ros_pkg}" "${pkg_root}"
+  require_ros_interface_payload "${ros_pkg}" "${pkg_root}"
+  prune_installed_package_payload "${pkg_root}" "${ros_pkg}"
+  write_control "${pkg_root}" "${package}" "${depends}" "${description}"
+  fakeroot dpkg-deb --build "${pkg_root}" "${OUTPUT_DIR}/${package}_${VERSION}_${ARCH}.deb" >/dev/null
+}
+
 onboard_detector_pkg="ros-noetic-xgc2-onboard-detector-lv"
+fapp_msgs_pkg="ros-noetic-xgc2-fapp-obj-state-msgs"
+fapp_mapping_pkg="ros-noetic-xgc2-fapp-mot-mapping"
 meta_pkg="ros-noetic-xgc2-detection"
 
 ros_base_depends="ros-noetic-roscpp, ros-noetic-rospy, ros-noetic-std-msgs, ros-noetic-geometry-msgs, ros-noetic-sensor-msgs, ros-noetic-nav-msgs"
 detector_depends="${ros_base_depends}, ros-noetic-cv-bridge, ros-noetic-gazebo-msgs, ros-noetic-image-transport, ros-noetic-message-filters, ros-noetic-message-runtime, ros-noetic-pcl-conversions, ros-noetic-pcl-ros, ros-noetic-tf2-geometry-msgs, ros-noetic-vision-msgs, ros-noetic-visualization-msgs, libopencv-dev, libpcl-dev, python3"
+fapp_msgs_depends="ros-noetic-actionlib-msgs, ros-noetic-geometry-msgs, ros-noetic-message-runtime, ros-noetic-sensor-msgs, ros-noetic-std-msgs"
+fapp_mapping_depends="${fapp_msgs_pkg} (= ${VERSION}), ${ros_base_depends}, ros-noetic-cv-bridge, ros-noetic-message-filters, ros-noetic-message-runtime, ros-noetic-pcl-conversions, ros-noetic-pcl-ros, ros-noetic-visualization-msgs, libeigen3-dev, libopencv-dev, libpcl-dev"
 
 build_onboard_detector_deb() {
   build_ros_package_deb \
@@ -170,6 +201,22 @@ build_onboard_detector_deb() {
     "XGC2 LV-DOT onboard dynamic obstacle detector package"
 }
 
+build_fapp_msgs_deb() {
+  build_ros_interface_deb \
+    "${fapp_msgs_pkg}" \
+    "fapp_obj_state_msgs" \
+    "${fapp_msgs_depends}" \
+    "XGC2 FAPP dynamic obstacle state message definitions"
+}
+
+build_fapp_mapping_deb() {
+  build_ros_package_deb \
+    "${fapp_mapping_pkg}" \
+    "fapp_mot_mapping" \
+    "${fapp_mapping_depends}" \
+    "XGC2 FAPP point-cloud dynamic object mapping and tracking package"
+}
+
 build_meta_deb() {
   meta_root="${BUILD_DIR}/${meta_pkg}"
   rm -rf "${meta_root}"
@@ -177,7 +224,7 @@ build_meta_deb() {
   write_control \
     "${meta_root}" \
     "${meta_pkg}" \
-    "${onboard_detector_pkg} (= ${VERSION})" \
+    "${onboard_detector_pkg} (= ${VERSION}), ${fapp_msgs_pkg} (= ${VERSION}), ${fapp_mapping_pkg} (= ${VERSION})" \
     "XGC2 ROS1 perception detection package set"
   fakeroot dpkg-deb --build "${meta_root}" "${OUTPUT_DIR}/${meta_pkg}_${VERSION}_${ARCH}.deb" >/dev/null
 }
@@ -185,10 +232,22 @@ build_meta_deb() {
 case "${PACKAGE_GROUP}" in
   all)
     build_onboard_detector_deb
+    build_fapp_msgs_deb
+    build_fapp_mapping_deb
     build_meta_deb
     ;;
   onboard-detector-lv)
     build_onboard_detector_deb
+    ;;
+  fapp)
+    build_fapp_msgs_deb
+    build_fapp_mapping_deb
+    ;;
+  fapp-obj-state-msgs)
+    build_fapp_msgs_deb
+    ;;
+  fapp-mot-mapping)
+    build_fapp_mapping_deb
     ;;
   meta)
     build_meta_deb

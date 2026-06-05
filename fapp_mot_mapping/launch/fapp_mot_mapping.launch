@@ -1,0 +1,9 @@
+<launch>
+  <arg name="cloud_topic" default="/fapp_map_generator/obj_cloud"/>
+  <arg name="odom_topic" default="/drone_0_visual_slam/odom"/>
+
+  <node pkg="fapp_mot_mapping" type="fapp_mapping_node" name="fapp_mapping_node" output="screen">
+    <param name="cloud_topic" value="$(arg cloud_topic)"/>
+    <param name="odom_topic" value="$(arg odom_topic)"/>
+  </node>
+</launch>

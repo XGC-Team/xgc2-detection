@@ -22,6 +22,8 @@ done
 rm -rf "${WORK_DIR}/src" "${WORK_DIR}/build" "${WORK_DIR}/devel" "${WORK_DIR}/install-root"
 mkdir -p "${WORK_DIR}/src"
 rsync -a --delete "${REPO_ROOT}/onboard_detector_lv/" "${WORK_DIR}/src/onboard_detector_lv/"
+rsync -a --delete "${REPO_ROOT}/fapp_obj_state_msgs/" "${WORK_DIR}/src/fapp_obj_state_msgs/"
+rsync -a --delete "${REPO_ROOT}/fapp_mot_mapping/" "${WORK_DIR}/src/fapp_mot_mapping/"
 
 cd "${WORK_DIR}"
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
@@ -32,6 +34,11 @@ test "$(rospack find onboard_detector_lv)" = "${WORK_DIR}/src/onboard_detector_l
 test -f "${WORK_DIR}/devel/include/onboard_detector_lv/GetDynamicObstacles.h"
 test -x "${WORK_DIR}/devel/lib/onboard_detector_lv/detector_node_lv"
 test -x "${WORK_DIR}/devel/lib/onboard_detector_lv/fake_detector_node_lv"
+test "$(rospack find fapp_obj_state_msgs)" = "${WORK_DIR}/src/fapp_obj_state_msgs"
+test "$(rospack find fapp_mot_mapping)" = "${WORK_DIR}/src/fapp_mot_mapping"
+test -f "${WORK_DIR}/devel/include/fapp_obj_state_msgs/ObjectsStates.h"
+test -f "${WORK_DIR}/devel/include/fapp_obj_state_msgs/State.h"
+test -x "${WORK_DIR}/devel/lib/fapp_mot_mapping/fapp_mapping_node"
 
 DESTDIR="${WORK_DIR}/install-root" catkin_make install \
   -DCMAKE_INSTALL_PREFIX="/opt/ros/${ROS_DISTRO}" \
@@ -42,5 +49,10 @@ test -d "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/include/onboard_detector
 test -x "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/lib/onboard_detector_lv/detector_node_lv"
 test -x "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/lib/onboard_detector_lv/yolov11_detector_node.py"
 test -f "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/lib/onboard_detector_lv/weights/yolo11n.pt"
+test -d "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/share/fapp_obj_state_msgs"
+test -d "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/share/fapp_mot_mapping"
+test -f "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/include/fapp_obj_state_msgs/ObjectsStates.h"
+test -x "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/lib/fapp_mot_mapping/fapp_mapping_node"
+test -f "${WORK_DIR}/install-root/opt/ros/${ROS_DISTRO}/share/fapp_mot_mapping/launch/fapp_mot_mapping.launch"
 
 echo "ROS package check passed"
