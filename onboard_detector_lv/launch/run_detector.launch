@@ -1,0 +1,9 @@
+<launch>
+	<rosparam file="$(find onboard_detector_lv)/cfg/detector_param.yaml" ns="/onboard_detector_lv" />
+	<node pkg="onboard_detector_lv" type="detector_node_lv" name="detector_node_lv" output="screen" />
+    <!-- <node pkg="onboard_detector_lv" type="yolo_detector_node.py" name="yolo_detector_node" output="screen" /> -->
+    <!-- TO run yolo v11: pip install ultralytics -->
+    <node pkg="onboard_detector_lv" type="yolov11_detector_node.py" name="yolov11_detector_node" output="log" />
+	<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector_lv)/rviz/detector.rviz"/> -->
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector_lv)/rviz/detector_lv.rviz"/>
+</launch>

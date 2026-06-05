@@ -1,0 +1,116 @@
+name: build-debs
+
+on:
+  push:
+    branches:
+      - noetic
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  package-compliance:
+    name: Package compliance
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check package metadata and packaging consistency
+        run: .xgc2/scripts/check_package_compliance.sh
+
+  deb-build:
+    name: Build ${{ matrix.package-group }} (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package-group: onboard-detector-lv
+            arch: amd64
+            runner: ubuntu-latest
+          - package-group: onboard-detector-lv
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build deb packages in Docker
+        env:
+          DETECTION_PACKAGE_GROUP: ${{ matrix.package-group }}
+          DETECTION_ARCH: ${{ matrix.arch }}
+        run: |
+          .xgc2/scripts/build_debs_in_docker.sh \
+            --package-group "$DETECTION_PACKAGE_GROUP" \
+            --work-dir "$RUNNER_TEMP/detection-${DETECTION_PACKAGE_GROUP}-${DETECTION_ARCH}" \
+            --output-dir "$GITHUB_WORKSPACE/debs" \
+            --skip-install-check
+
+      - name: Upload deb artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgc2-detection-debs-${{ matrix.package-group }}-${{ matrix.arch }}
+          path: debs/*.deb
+
+  meta-build:
+    name: Build detection meta packages
+    runs-on: ubuntu-latest
+    needs: deb-build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install meta package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fakeroot
+
+      - name: Build meta deb packages
+        env:
+          DETECTION_META_ARCHES: amd64 arm64
+        run: |
+          mkdir -p debs
+          for arch in $DETECTION_META_ARCHES; do
+            .xgc2/scripts/package_debs.sh \
+              --package-group meta \
+              --arch "$arch" \
+              --output-dir debs
+          done
+
+      - name: Upload meta artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgc2-detection-debs-meta
+          path: debs/*.deb
+
+  publish-apt:
+    name: Publish APT
+    runs-on: ubuntu-latest
+    needs:
+      - deb-build
+      - meta-build
+    env:
+      APT_REPO_HOST: ${{ secrets.APT_REPO_HOST }}
+      APT_REPO_PORT: ${{ secrets.APT_REPO_PORT }}
+      APT_REPO_SSH_KEY: ${{ secrets.APT_REPO_SSH_KEY }}
+      APT_REPO_KNOWN_HOSTS: ${{ secrets.APT_REPO_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download deb artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: xgc2-detection-debs-*
+          path: debs
+          merge-multiple: true
+
+      - name: Skip APT publish when secrets are not configured
+        if: ${{ env.APT_REPO_HOST == '' || env.APT_REPO_PORT == '' || env.APT_REPO_SSH_KEY == '' || env.APT_REPO_KNOWN_HOSTS == '' }}
+        run: |
+          echo "APT publish skipped: APT_REPO_HOST, APT_REPO_PORT, APT_REPO_SSH_KEY, or APT_REPO_KNOWN_HOSTS is not configured."
+
+      - name: Publish to self-hosted APT repository
+        if: ${{ env.APT_REPO_HOST != '' && env.APT_REPO_PORT != '' && env.APT_REPO_SSH_KEY != '' && env.APT_REPO_KNOWN_HOSTS != '' }}
+        run: .xgc2/scripts/publish_apt_repo.sh --deb-dir debs

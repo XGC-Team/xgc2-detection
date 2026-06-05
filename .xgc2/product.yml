@@ -1,0 +1,34 @@
+schema: xgc2.product.v1
+id: xgc2-detection
+name: XGC2 Detection
+kind: ros1-apt
+summary: ROS1 perception detection packages including the LV-DOT onboard dynamic obstacle detector.
+
+ros:
+  distro: noetic
+  packages:
+    - onboard_detector_lv
+
+apt:
+  distribution: focal
+  install:
+    - ros-noetic-xgc2-detection
+  packages:
+    - ros-noetic-xgc2-detection
+    - ros-noetic-xgc2-onboard-detector-lv
+  depends:
+    - ros-noetic-xgc2-onboard-detector-lv
+
+usage:
+  install: |
+    sudo apt update
+    sudo apt install ros-noetic-xgc2-detection
+  smoke_test: |
+    rospack find onboard_detector_lv
+    rosrun onboard_detector_lv detector_node_lv --help
+
+ownership:
+  paths:
+    - /opt/ros/noetic/share/onboard_detector_lv
+    - /opt/ros/noetic/include/onboard_detector_lv
+    - /opt/ros/noetic/lib/onboard_detector_lv
