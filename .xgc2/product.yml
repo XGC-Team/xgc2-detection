@@ -1,6 +1,7 @@
 schema: xgc2.product.v1
 id: xgc2-detection
 name: XGC2 Detection
+version: 1.0.0-3
 kind: ros1-apt
 summary: ROS1 perception detection packages including the LV-DOT onboard dynamic obstacle detector.
 
