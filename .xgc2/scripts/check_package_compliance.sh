@@ -42,7 +42,7 @@ grep -q "ros-noetic-xgc2-fapp-mot-mapping" "${REPO_ROOT}/.xgc2/scripts/package_d
 grep -q "ros-noetic-xgc2-detection" "${REPO_ROOT}/.xgc2/scripts/package_debs.sh"
 grep -q "prune_installed_package_payload" "${REPO_ROOT}/.xgc2/scripts/package_debs.sh"
 grep -q "require_ros_package_payload" "${REPO_ROOT}/.xgc2/scripts/package_debs.sh"
-grep -q "PACKAGE_VERSION:-1.1.0-1" "${REPO_ROOT}/.xgc2/scripts/package_debs.sh"
+grep -Fq 'PACKAGE_VERSION:-$(product_version)' "${REPO_ROOT}/.xgc2/scripts/package_debs.sh"
 grep -q "ros-noetic-vision-msgs" "${REPO_ROOT}/.xgc2/scripts/build_debs_in_docker.sh"
 grep -q "workflow_dispatch:" "${REPO_ROOT}/.github/workflows/release.yml"
 grep -q "publish_apt:" "${REPO_ROOT}/.github/workflows/release.yml"
