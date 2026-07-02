@@ -1,7 +1,7 @@
 schema: xgc2.product.v1
 id: xgc2-detection
 name: XGC2 Detection
-version: 1.1.0-3
+version: 1.1.0-4
 kind: ros1-apt
 summary: ROS1 perception detection packages including the LV-DOT onboard dynamic obstacle
   detector.
@@ -19,9 +19,9 @@ apt:
   - ros-noetic-xgc2-fapp-obj-state-msgs
   - ros-noetic-xgc2-fapp-mot-mapping
   depends:
-  - ros-noetic-xgc2-onboard-detector-lv (>= 1.1.0-3)
-  - ros-noetic-xgc2-fapp-obj-state-msgs (>= 1.1.0-3)
-  - ros-noetic-xgc2-fapp-mot-mapping (>= 1.1.0-3)
+  - ros-noetic-xgc2-onboard-detector-lv (>= 1.1.0-4)
+  - ros-noetic-xgc2-fapp-obj-state-msgs (>= 1.1.0-4)
+  - ros-noetic-xgc2-fapp-mot-mapping (>= 1.1.0-4)
 usage:
   install: 'sudo apt update
 
