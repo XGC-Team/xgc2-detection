@@ -65,7 +65,7 @@ jobs:
           product_version="$(awk -F': *' '/^version:/ {print $2; exit}' .xgc2/product.yml)"
           python3 .xgc2/scripts/xgc2_artifact_manifest.py build \
             --deb-dir debs \
-            --output-dir build-manifests \
+            --output-dir .ci/build-manifests \
             --product xgc2-detection \
             --product-version "$product_version" \
             --distribution focal \
@@ -74,8 +74,8 @@ jobs:
             --ci-run-id "$GITHUB_RUN_ID" \
             --ci-workflow "$GITHUB_WORKFLOW" \
             --ci-workflow-ref "$GITHUB_WORKFLOW_REF"
-          mv "build-manifests/xgc2-detection_focal_${{ matrix.arch }}.build.json" \
-            "build-manifests/xgc2-detection_${{ matrix.package-group }}_focal_${{ matrix.arch }}.build.json"
+          mv ".ci/build-manifests/xgc2-detection_focal_${{ matrix.arch }}.build.json" \
+            ".ci/build-manifests/xgc2-detection_${{ matrix.package-group }}_focal_${{ matrix.arch }}.build.json"
 
       - name: Upload deb artifacts
         uses: actions/upload-artifact@v4
@@ -83,7 +83,7 @@ jobs:
           name: xgc2-detection-debs-${{ matrix.package-group }}-${{ matrix.arch }}
           path: |
             debs/*.deb
-            build-manifests/*.json
+            .ci/build-manifests/*.json
           retention-days: 14
           include-hidden-files: true
 
@@ -112,7 +112,7 @@ jobs:
               --output-dir "debs/$arch"
             python3 .xgc2/scripts/xgc2_artifact_manifest.py build \
               --deb-dir "debs/$arch" \
-              --output-dir build-manifests \
+              --output-dir .ci/build-manifests \
               --product xgc2-detection \
               --product-version "$product_version" \
               --distribution focal \
@@ -121,8 +121,8 @@ jobs:
               --ci-run-id "$GITHUB_RUN_ID" \
               --ci-workflow "$GITHUB_WORKFLOW" \
               --ci-workflow-ref "$GITHUB_WORKFLOW_REF"
-            mv "build-manifests/xgc2-detection_focal_${arch}.build.json" \
-              "build-manifests/xgc2-detection_meta_focal_${arch}.build.json"
+            mv ".ci/build-manifests/xgc2-detection_focal_${arch}.build.json" \
+              ".ci/build-manifests/xgc2-detection_meta_focal_${arch}.build.json"
           done
 
       - name: Upload meta artifacts
@@ -131,6 +131,6 @@ jobs:
           name: xgc2-detection-debs-meta
           path: |
             debs/**/*.deb
-            build-manifests/*.json
+            .ci/build-manifests/*.json
           retention-days: 14
           include-hidden-files: true
