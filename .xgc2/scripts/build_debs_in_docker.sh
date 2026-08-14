@@ -94,16 +94,16 @@ docker run --rm \
     mkdir -p /workspace/work/src
     case "${PACKAGE_GROUP}" in
       all)
-        rsync -a --delete /workspace/detection/onboard_detector_lv/ /workspace/work/src/onboard_detector_lv/
-        rsync -a --delete /workspace/detection/fapp_obj_state_msgs/ /workspace/work/src/fapp_obj_state_msgs/
-        rsync -a --delete /workspace/detection/fapp_mot_mapping/ /workspace/work/src/fapp_mot_mapping/
+        rsync -a --delete /workspace/detection/temp/onboard_detector_lv/ /workspace/work/src/onboard_detector_lv/
+        rsync -a --delete /workspace/detection/temp/fapp_obj_state_msgs/ /workspace/work/src/fapp_obj_state_msgs/
+        rsync -a --delete /workspace/detection/temp/fapp_mot_mapping/ /workspace/work/src/fapp_mot_mapping/
         ;;
       onboard-detector-lv)
-        rsync -a --delete /workspace/detection/onboard_detector_lv/ /workspace/work/src/onboard_detector_lv/
+        rsync -a --delete /workspace/detection/temp/onboard_detector_lv/ /workspace/work/src/onboard_detector_lv/
         ;;
       fapp|fapp-obj-state-msgs|fapp-mot-mapping)
-        rsync -a --delete /workspace/detection/fapp_obj_state_msgs/ /workspace/work/src/fapp_obj_state_msgs/
-        rsync -a --delete /workspace/detection/fapp_mot_mapping/ /workspace/work/src/fapp_mot_mapping/
+        rsync -a --delete /workspace/detection/temp/fapp_obj_state_msgs/ /workspace/work/src/fapp_obj_state_msgs/
+        rsync -a --delete /workspace/detection/temp/fapp_mot_mapping/ /workspace/work/src/fapp_mot_mapping/
         ;;
       *)
         echo "unknown package group: ${PACKAGE_GROUP}" >&2

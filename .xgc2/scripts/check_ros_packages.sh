@@ -21,9 +21,9 @@ done
 
 rm -rf "${WORK_DIR}/src" "${WORK_DIR}/build" "${WORK_DIR}/devel" "${WORK_DIR}/install-root"
 mkdir -p "${WORK_DIR}/src"
-rsync -a --delete "${REPO_ROOT}/onboard_detector_lv/" "${WORK_DIR}/src/onboard_detector_lv/"
-rsync -a --delete "${REPO_ROOT}/fapp_obj_state_msgs/" "${WORK_DIR}/src/fapp_obj_state_msgs/"
-rsync -a --delete "${REPO_ROOT}/fapp_mot_mapping/" "${WORK_DIR}/src/fapp_mot_mapping/"
+rsync -a --delete "${REPO_ROOT}/temp/onboard_detector_lv/" "${WORK_DIR}/src/onboard_detector_lv/"
+rsync -a --delete "${REPO_ROOT}/temp/fapp_obj_state_msgs/" "${WORK_DIR}/src/fapp_obj_state_msgs/"
+rsync -a --delete "${REPO_ROOT}/temp/fapp_mot_mapping/" "${WORK_DIR}/src/fapp_mot_mapping/"
 
 cd "${WORK_DIR}"
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
