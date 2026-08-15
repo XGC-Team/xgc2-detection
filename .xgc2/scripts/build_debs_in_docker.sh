@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-DOCKER_IMAGE="${DOCKER_IMAGE:-ros:noetic-ros-base-focal}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-ghcr.io/xgc-team/xgc2-images/xgc2-build-focal-ros-noetic:1.0.0}"
 WORK_DIR="${WORK_DIR:-${REPO_ROOT}/.work/docker}"
 OUTPUT_DIR="${OUTPUT_DIR:-${REPO_ROOT}/debs}"
 INSTALL_CHECK="${INSTALL_CHECK:-true}"
@@ -56,40 +56,7 @@ docker run --rm \
     set -euo pipefail
 
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update
-    apt-get install -y --no-install-recommends \
-      build-essential \
-      ca-certificates \
-      cmake \
-      curl \
-      dpkg-dev \
-      fakeroot \
-      file \
-      git \
-      libeigen3-dev \
-      libopencv-dev \
-      libpcl-dev \
-      python3 \
-      rsync \
-      ros-noetic-cv-bridge \
-      ros-noetic-gazebo-msgs \
-      ros-noetic-geometry-msgs \
-      ros-noetic-image-transport \
-      ros-noetic-message-filters \
-      ros-noetic-message-generation \
-      ros-noetic-message-runtime \
-      ros-noetic-nav-msgs \
-      ros-noetic-pcl-conversions \
-      ros-noetic-pcl-ros \
-      ros-noetic-roscpp \
-      ros-noetic-rospack \
-      ros-noetic-rospy \
-      ros-noetic-sensor-msgs \
-      ros-noetic-std-msgs \
-      ros-noetic-tf2-geometry-msgs \
-      ros-noetic-vision-msgs \
-      ros-noetic-visualization-msgs
-
+    
     rm -rf /workspace/work/src /workspace/work/build /workspace/work/devel /workspace/work/install-root
     mkdir -p /workspace/work/src
     case "${PACKAGE_GROUP}" in
