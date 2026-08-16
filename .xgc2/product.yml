@@ -3,8 +3,8 @@ id: xgc2-detection
 name: XGC2 Detection
 version: 1.1.0-7
 kind: ros1-apt
-summary: ROS1 detection aggregator. Imported packages are parked under temp/ and not
-  currently integrated.
+summary: ROS1 detection packages for onboard LiDAR detection and FAPP object-state
+  mapping.
 ros:
   distro: noetic
   packages:
