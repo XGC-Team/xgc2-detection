@@ -1,14 +1,132 @@
 name: ci
 
-# Parked imports live under temp/ and are not being integrated.
-
 on:
+  push:
+    branches:
+      - noetic
+  pull_request:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  aggregator-ci-disabled:
-    name: Aggregator CI disabled
+  package-compliance:
+    name: Package compliance
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "xgc2-detection is not integrating packages under temp/."
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check package metadata and packaging consistency
+        run: |
+          set -euo pipefail
+          git diff --check HEAD
+          .xgc2/scripts/check_package_compliance.sh
+
+  deb-build:
+    name: Build ${{ matrix.package-group }} (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package-group: onboard-detector-lv
+            arch: amd64
+            runner: ubuntu-latest
+          - package-group: onboard-detector-lv
+            arch: arm64
+            runner: ubuntu-24.04-arm
+          - package-group: fapp
+            arch: amd64
+            runner: ubuntu-latest
+          - package-group: fapp
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build deb packages in Docker
+        env:
+          DETECTION_PACKAGE_GROUP: ${{ matrix.package-group }}
+          DETECTION_ARCH: ${{ matrix.arch }}
+        run: |
+          .xgc2/scripts/build_debs_in_docker.sh \
+            --package-group "$DETECTION_PACKAGE_GROUP" \
+            --work-dir "$RUNNER_TEMP/detection-${DETECTION_PACKAGE_GROUP}-${DETECTION_ARCH}" \
+            --output-dir "$GITHUB_WORKSPACE/debs" \
+            --skip-install-check
+
+      - name: Create trusted build manifest
+        run: |
+          product_version="$(awk -F': *' '/^version:[[:space:]]*/ {print $2; exit}' .xgc2/product.yml)"
+          python3 .xgc2/scripts/xgc2_artifact_manifest.py build \
+            --deb-dir debs \
+            --output-dir .ci/build-manifests \
+            --product xgc2-detection \
+            --product-version "$product_version" \
+            --distribution focal \
+            --architecture "${{ matrix.arch }}" \
+            --source-sha "$GITHUB_SHA" \
+            --ci-run-id "$GITHUB_RUN_ID" \
+            --ci-workflow "$GITHUB_WORKFLOW" \
+            --ci-workflow-ref "$GITHUB_WORKFLOW_REF"
+          mv ".ci/build-manifests/xgc2-detection_focal_${{ matrix.arch }}.build.json" \
+            ".ci/build-manifests/xgc2-detection_${{ matrix.package-group }}_focal_${{ matrix.arch }}.build.json"
+
+      - name: Upload deb artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgc2-detection-debs-${{ matrix.package-group }}-${{ matrix.arch }}
+          path: |
+            debs/*.deb
+            .ci/build-manifests/*.json
+          retention-days: 14
+          include-hidden-files: true
+
+  meta-build:
+    name: Build detection meta packages
+    runs-on: ubuntu-latest
+    container: ghcr.io/xgc-team/xgc2-images/xgc2-build-focal-dev:1.0.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build meta deb packages
+        env:
+          DETECTION_META_ARCHES: amd64 arm64
+        run: |
+          product_version="$(awk -F': *' '/^version:[[:space:]]*/ {print $2; exit}' .xgc2/product.yml)"
+          for arch in $DETECTION_META_ARCHES; do
+            mkdir -p "debs/$arch"
+            .xgc2/scripts/package_debs.sh \
+              --package-group meta \
+              --arch "$arch" \
+              --output-dir "debs/$arch"
+            python3 .xgc2/scripts/xgc2_artifact_manifest.py build \
+              --deb-dir "debs/$arch" \
+              --output-dir .ci/build-manifests \
+              --product xgc2-detection \
+              --product-version "$product_version" \
+              --distribution focal \
+              --architecture "$arch" \
+              --source-sha "$GITHUB_SHA" \
+              --ci-run-id "$GITHUB_RUN_ID" \
+              --ci-workflow "$GITHUB_WORKFLOW" \
+              --ci-workflow-ref "$GITHUB_WORKFLOW_REF"
+            mv ".ci/build-manifests/xgc2-detection_focal_${arch}.build.json" \
+              ".ci/build-manifests/xgc2-detection_meta_focal_${arch}.build.json"
+          done
+
+      - name: Upload meta artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgc2-detection-debs-meta
+          path: |
+            debs/**/*.deb
+            debs/*.deb
+            .ci/build-manifests/*.json
+          retention-days: 14
+          include-hidden-files: true
