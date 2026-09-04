@@ -1,16 +1,22 @@
 # xgc2-detection
 
-Public XGC-Team aggregator for ROS 1 Noetic detection packages.
+Public XGC-Team ROS 1 Noetic detection product.
 
-Nothing here is currently being integrated. The imported trees live under
-`temp/` for reference only. They are not part of the current Debian set or
-aggregator CI.
+The imported source trees still live under the historical `temp/` directory,
+but **that directory name no longer means parked or reference-only**. Current CI
+copies these trees into an isolated catkin workspace, builds amd64/arm64 Debian
+packages, creates trusted build manifests, and the release workflow publishes
+the product through the central XGC2 release train.
 
-| Path | Origin |
-| --- | --- |
-| `temp/onboard_detector_lv` | LV-DOT/onboard_detector_lv |
-| `temp/fapp_obj_state_msgs` | FAPP object-state messages |
-| `temp/fapp_mot_mapping` | FAPP mapping/tracking |
+| Path | Origin | Current role |
+| --- | --- | --- |
+| `temp/onboard_detector_lv` | LV-DOT/onboard_detector_lv | packaged source |
+| `temp/fapp_obj_state_msgs` | FAPP object-state messages | packaged source |
+| `temp/fapp_mot_mapping` | FAPP mapping/tracking | packaged source |
+
+The canonical product metadata is `.xgc2/product.yml`. Packaging logic under
+`.xgc2/scripts/` is authoritative for which source trees enter the Debian
+artifacts; do not infer lifecycle from the legacy `temp/` path name.
 
 Clone:
 
